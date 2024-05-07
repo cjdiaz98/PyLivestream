@@ -74,7 +74,7 @@ def test_script():
             [
                 sys.executable,
                 "-m",
-                "pylivestream.glob",
+                "pylivestream.fglob",
                 str(fn),
                 "localhost",
                 str(ini),

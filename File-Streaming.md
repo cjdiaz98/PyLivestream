@@ -15,10 +15,10 @@ python -m pylivestream.loopfile videofile site
 Glob list of video files to stream:
 
 ```sh
-python -m pylivestream.glob path site -glob glob_pattern
+python -m pylivestream.fglob path site -glob glob_pattern
 ```
 
-* `-glob` glob pattern of files to stream e.g. "*.avi".  For [recursive globbing](https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob), do like "**/*.avi".
+* `-glob` glob pattern of files to stream e.g. `*.avi`.  For [recursive globbing](https://docs.python.org/3/library/pathlib.html#pathlib.Path.glob), do like `**/*.avi`.
 * `-loop` optionally loop endlessly the globbed file list
 * `-shuffle` optionally shuffle the globbed file list
 * `-image` if you have AUDIO files, you should normally set an image to display, as most/all streaming sites REQUIRE a video feed--even a static image.
@@ -29,7 +29,7 @@ python -m pylivestream.glob path site -glob glob_pattern
 Example: all AVI videos in directory `~/Videos`:
 
 ```sh
-python -m pylivestream.glob ~/Videos youtube -glob "*.avi"
+python -m pylivestream.fglob ~/Videos youtube -glob "*.avi"
 ```
 
 ## stream endlessly looping videos
@@ -37,7 +37,7 @@ python -m pylivestream.glob ~/Videos youtube -glob "*.avi"
 Example: all AVI videos in `~/Videos` are endlessly looped:
 
 ```sh
-python -m pylivestream.glob ~/Videos youtube -glob "*.avi" -loop
+python -m pylivestream.fglob ~/Videos youtube -glob "*.avi" -loop
 ```
 
 ## stream m3u8 playlist
@@ -49,7 +49,7 @@ m3u8 playlist [example](./Examples/playlist_m3u8.py)
 Glob list of video files to stream. Suggest including a static -image (could be your logo):
 
 ```sh
-python -m pylivestream.glob path site -glob glob_pattern -image image
+python -m pylivestream.fglob path site -glob glob_pattern -image image
 ```
 
 * `path` path to where video files are
@@ -59,17 +59,17 @@ python -m pylivestream.glob path site -glob glob_pattern -image image
 Example: stream all .mp3 audio under `~/music` directory:
 
 ```sh
-python -m pylivestream.glob ~/music youtube -glob "*.mp3" -image mylogo.jpg
+python -m pylivestream.fglob ~/music youtube -glob "*.mp3" -image mylogo.jpg
 ```
 
 Example: stream all .mp3 audio in `~/music` with an animated GIF or video clip repeating:
 
 ```sh
-python -m pylivestream.glob ~/music youtube -glob "*.mp3" -image myclip.avi
+python -m pylivestream.fglob ~/music youtube -glob "*.mp3" -image myclip.avi
 ```
 
 or
 
 ```sh
-python -m pylivestream.glob ~/music youtube -glob "*.mp3" -image animated.gif
+python -m pylivestream.fglob ~/music youtube -glob "*.mp3" -image animated.gif
 ```

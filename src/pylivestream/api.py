@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .base import FileIn, Microphone, SaveDisk, Camera
-from .glob import stream_files
+from .fglob import stream_files
 from .screen import stream_screen
 
 __all__ = [

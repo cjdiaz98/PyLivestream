@@ -45,7 +45,7 @@ def main():
             [
                 sys.executable,
                 "-m",
-                "pylivestream.glob",
+                "pylivestream.fglob",
                 "-y",
                 "-image",
                 str(fn),
@@ -57,11 +57,11 @@ def main():
 
     print("1990s vector graphics with orchestra music (NO caption")
     subprocess.check_call(
-        [sys.executable, "-m", "pylivestream.glob", "-y", "-image", str(MOVING), str(MUSIC), HOST]
+        [sys.executable, "-m", "pylivestream.fglob", "-y", "-image", str(MOVING), str(MUSIC), HOST]
     )
     # video
     print("Looping video")
-    subprocess.check_call([sys.executable, "-m", "pylivestream.glob", "-y", str(VIDEO), HOST])
+    subprocess.check_call([sys.executable, "-m", "pylivestream.fglob", "-y", str(VIDEO), HOST])
     # %% Screenshare
     print("Screenshare + microphone")
     subprocess.check_call([sys.executable, "-m", "pylivestream.screen", "-y", HOST])

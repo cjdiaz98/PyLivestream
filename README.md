@@ -132,7 +132,7 @@ There are two ways to start a stream (assuming you've configured as per followin
 Both do the same thing.
 
 * command line
-  * python -m pylivestream.glob
+  * python -m pylivestream.fglob
   * python -m pylivestream.screen
   * python -m pylivestream.loopfile
   * python -m pylivestream.screen2disk
