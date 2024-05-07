@@ -17,7 +17,7 @@ def test_exe(rex):
 
 @pytest.mark.parametrize("inp", (None, ""))
 def test_attrs(inp):
-    assert pls.utils.get_resolution(inp) is None
+    assert not pls.utils.get_resolution(inp)
 
     with importlib.resources.as_file(
         importlib.resources.files("pylivestream.data").joinpath("bunny.avi")

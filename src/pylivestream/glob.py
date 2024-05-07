@@ -18,13 +18,13 @@ def stream_files(
     websites: list[str],
     *,
     video_path: Path,
-    glob: str = None,
+    glob: str | None = None,
     assume_yes: bool = False,
-    loop: bool = None,
-    shuffle: bool = None,
-    still_image: Path = None,
-    no_meta: bool = None,
-    timeout: float = None,
+    loop: bool = False,
+    shuffle: bool = False,
+    still_image: Path | None = None,
+    no_meta: bool = False,
+    timeout: float | None = None,
 ):
     # %% file / glob wranging
     flist = fileglob(video_path, glob)
@@ -49,19 +49,19 @@ def stream_files(
 
 def playonce(
     flist: list[Path],
-    image: Path,
+    image: Path | None,
     sites: list[str],
     inifn: Path,
     shuffle: bool,
     usemeta: bool,
     yes: bool,
-    timeout: float = None,
+    timeout: float | None = None,
 ):
 
     if shuffle:
         random.shuffle(flist)
 
-    caption: str
+    caption: str | None
 
     for f in flist:
         if usemeta and TinyTag:
@@ -80,7 +80,7 @@ def playonce(
         s.golive()
 
 
-def fileglob(path: Path, glob: str) -> list[Path]:
+def fileglob(path: Path, glob: str | None) -> list[Path]:
 
     path = Path(path).expanduser()
 

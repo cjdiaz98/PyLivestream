@@ -36,19 +36,16 @@ class Stream:
         self.site: str = site
         self.vidsource = kwargs.get("vidsource")
 
-        if kwargs.get("image"):
-            self.image = Path(kwargs["image"]).expanduser()
-        else:
-            self.image = None
+        self.image = Path(kwargs["image"]).expanduser() if kwargs.get("image") else None
 
-        self.loop: bool = kwargs.get("loop")
+        self.loop: bool = kwargs.get("loop", False)
 
         self.infn = Path(kwargs["infn"]).expanduser() if kwargs.get("infn") else None
         self.yes: list[str] = self.F.YES if kwargs.get("yes") else []
 
         self.queue: list[str] = []  # self.F.QUEUE
 
-        self.caption: str = kwargs.get("caption")
+        self.caption: str = kwargs.get("caption", "")
 
         self.timelimit: list[str] = self.F.timelimit(kwargs.get("timeout"))
 
@@ -80,7 +77,7 @@ class Stream:
 
         if self.vidsource == "camera":
             self.res: list[str] = C.get("camera_size")
-            self.fps: float = C.get("camera_fps")
+            self.fps: float | None = C.get("camera_fps")
             self.movingimage = self.staticimage = False
         elif self.vidsource == "screen":
             self.res = C.get("screencap_size")
@@ -94,10 +91,10 @@ class Stream:
             self.res = utils.get_resolution(self.infn, self.probeexe)
             self.fps = utils.get_framerate(self.infn, self.probeexe)
         else:  # audio-only
-            self.res = None
+            self.res = []
             self.fps = None
 
-        if self.res is not None and len(self.res) != 2:
+        if self.res and len(self.res) != 2:
             raise ValueError(f"need height, width of video resolution, I have: {self.res}")
 
         self.audio_rate: str = C.get("audio_rate")
@@ -236,7 +233,7 @@ class Stream:
         if self.video_kbps:  # per-site override
             return
 
-        if self.res is not None:
+        if self.res:
             x: int = int(self.res[1])
         elif self.vidsource is None or self.vidsource == "file":
             logging.info("assuming 480p input.")

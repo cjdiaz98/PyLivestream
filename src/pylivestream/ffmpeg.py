@@ -23,7 +23,7 @@ class Ffmpeg:
 
         self.THROTTLE = "-re"
 
-    def timelimit(self, t: str | int | float) -> list[str]:
+    def timelimit(self, t: str | int | float | None) -> list[str]:
         if t is None:
             return []
 
@@ -36,7 +36,7 @@ class Ffmpeg:
         else:
             return []
 
-    def drawtext(self, text: str = None) -> list[str]:
+    def drawtext(self, text: str) -> list[str]:
         # fontfile=/path/to/font.ttf:
         if not text:  # None or '' or [] etc.
             return []
@@ -85,7 +85,7 @@ class Ffmpeg:
 
         return proc
 
-    def movingBG(self, bgfn: Path = None) -> list[str]:
+    def movingBG(self, bgfn: Path | None = None) -> list[str]:
         if not bgfn:
             return []
 
@@ -125,9 +125,9 @@ def get_ffprobe() -> str:
     return get_exe("ffprobe")
 
 
-def get_meta(fn: Path, exein: str = None) -> dict[str, T.Any]:
+def get_meta(fn: Path, exein: str | None = None) -> dict[str, T.Any]:
     if not fn:  # audio-only
-        return None
+        return {}
 
     fn = Path(fn).expanduser()
 
@@ -147,6 +147,6 @@ def get_meta(fn: Path, exein: str = None) -> dict[str, T.Any]:
         str(fn),
     ]
 
-    ret = subprocess.check_output(cmd, universal_newlines=True)
+    ret = subprocess.check_output(cmd, text=True)
     # %% decode JSON from FFprobe
     return json.loads(ret)

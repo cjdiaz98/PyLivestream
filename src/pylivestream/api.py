@@ -30,9 +30,9 @@ def stream_file(
     ini_file: Path,
     websites: str | list[str],
     video_file: Path,
-    loop: bool = None,
+    loop: bool | None = None,
     assume_yes: bool = False,
-    timeout: float = None,
+    timeout: float | None = None,
 ):
     S = FileIn(ini_file, websites, infn=video_file, loop=loop, yes=assume_yes, timeout=timeout)
     sites: list[str] = list(S.streams.keys())
@@ -50,9 +50,9 @@ def stream_microphone(
     ini_file: Path,
     websites: list[str],
     *,
-    still_image: Path = None,
-    assume_yes: bool = False,
-    timeout: float = None,
+    still_image: Path | None = None,
+    assume_yes: bool | None = False,
+    timeout: float | None = None,
 ):
     """
     livestream audio, with still image background
@@ -70,7 +70,7 @@ def stream_microphone(
 
 
 def capture_screen(
-    ini_file: Path, *, out_file: Path, assume_yes: bool = False, timeout: float = None
+    ini_file: Path, *, out_file: Path, assume_yes: bool = False, timeout: float | None = None
 ):
 
     s = SaveDisk(ini_file, out_file, yes=assume_yes, timeout=timeout)

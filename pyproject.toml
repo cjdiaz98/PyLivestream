@@ -1,5 +1,6 @@
 [build-system]
 requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "pylivestream"
@@ -34,7 +35,3 @@ line-length = 100
 [tool.mypy]
 files = ["src"]
 ignore_missing_imports = true
-strict_optional = false
-allow_redefinition = true
-show_error_context = false
-show_column_numbers = true

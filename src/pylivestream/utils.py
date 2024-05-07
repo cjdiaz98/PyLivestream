@@ -27,7 +27,7 @@ This is an error-tolerant way; we haven't found it necessary.
 I don't like putting enormous amounts in a PIPE, this can be unstable.
 Better to let users know there's a problem.
 
-    ret = subprocess.run(cmd, stderr=subprocess.PIPE, universal_newlines=True)
+    ret = subprocess.run(cmd, stderr=subprocess.PIPE, text=True)
 
     if ret.returncode != 0:
         if "Connection reset by peer" in ret.stderr:
@@ -48,7 +48,7 @@ def check_device(cmd: list[str]) -> bool:
     return ok
 
 
-def check_display(fn: Path = None) -> bool:
+def check_display(fn: Path | None = None) -> bool:
     """see if it's possible to display something with a test file"""
 
     def _check_disp(fn: Path | contextlib.AbstractContextManager[Path]) -> int:
@@ -83,7 +83,7 @@ def meta_caption(meta) -> str:
     return caption
 
 
-def get_resolution(fn: Path, exe: str = None) -> list[str]:
+def get_resolution(fn: Path | None, exe: str | None = None) -> list[str]:
     """
     get resolution (widthxheight) of video file
     http://trac.ffmpeg.org/wiki/FFprobeTips#WidthxHeight
@@ -101,11 +101,14 @@ def get_resolution(fn: Path, exe: str = None) -> list[str]:
     if not a video file, None is returned.
     """
 
-    meta = get_meta(fn, exe)
-    if meta is None:
-        return None
+    if fn is None:
+        return []
 
-    res = None
+    meta = get_meta(fn, exe)
+    if not meta:
+        return []
+
+    res = []
 
     for s in meta["streams"]:
         if s["codec_type"] != "video":
@@ -116,7 +119,7 @@ def get_resolution(fn: Path, exe: str = None) -> list[str]:
     return res
 
 
-def get_framerate(fn: Path, exe: str = None) -> float:
+def get_framerate(fn: Path | None, exe: str | None = None) -> float | None:
     """
     get framerate of video file
     http://trac.ffmpeg.org/wiki/FFprobeTips#FrameRate
@@ -136,8 +139,11 @@ def get_framerate(fn: Path, exe: str = None) -> float:
         video framerate (frames/second). If not a video file, None is returned.
     """
 
+    if fn is None:
+        return None
+
     meta = get_meta(fn, exe)
-    if meta is None:
+    if not meta:
         return None
 
     fps = None

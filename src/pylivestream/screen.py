@@ -7,7 +7,7 @@ from .base import Screenshare
 
 
 def stream_screen(
-    ini_file: Path, websites: list[str], *, assume_yes: bool = False, timeout: float = None
+    ini_file: Path, websites: list[str], *, assume_yes: bool = False, timeout: float | None = None
 ):
 
     S = Screenshare(ini_file, websites, yes=assume_yes, timeout=timeout)

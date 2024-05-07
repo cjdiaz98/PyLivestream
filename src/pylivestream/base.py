@@ -75,7 +75,7 @@ class Livestream(Stream):
             + ["-f", "null", "-"]  # camera needs at output
         )
 
-    def startlive(self, sinks: list[str] = None):
+    def startlive(self, sinks: list[str] | None = None):
         """
         start the stream(s)
         """
@@ -141,7 +141,7 @@ class Livestream(Stream):
             proc.terminate()
         yield
 
-    def check_device(self, site: str = None) -> bool:
+    def check_device(self, site: str | None = None) -> bool:
         """
         requires stream to have been configured first.
         does a quick test stream to "null" to verify device is actually accessible
@@ -251,7 +251,7 @@ class FileIn:
 
 
 class SaveDisk(Stream):
-    def __init__(self, inifn: Path, outfn: Path = None, **kwargs):
+    def __init__(self, inifn: Path, outfn: Path | None = None, **kwargs):
         """
         records to disk screen capture with audio
 
