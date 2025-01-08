@@ -21,6 +21,7 @@ class Ffmpeg:
         # default 8, increasing can help avoid warnings
         self.QUEUE = ["-thread_queue_size", "8"]
 
+        # https://trac.ffmpeg.org/wiki/StreamingGuide#The-reflag
         self.THROTTLE = "-re"
 
     def timelimit(self, t: str | int | float | None) -> list[str]:

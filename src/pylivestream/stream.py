@@ -212,17 +212,16 @@ class Stream:
         https://www.facebook.com/facebookmedia/get-started/live
         """
 
-        if not (self.audio_bps and self.acap and self.audio_chan and self.audio_rate):
-            return []
+        o = []
 
-        return [
-            "-codec:a",
-            self.audio_codec,
-            "-b:a",
-            str(self.audio_bps),
-            "-ar",
-            str(self.audio_rate),
-        ]
+        if self.audio_codec:
+            o += ["-codec:a", self.audio_codec]
+        if self.audio_bps:
+            o += ["-b:a", str(self.audio_bps)]
+        if self.audio_rate:
+            o += ["-ar", str(self.audio_rate)]
+
+        return o
 
     def video_bitrate(self) -> None:
         """

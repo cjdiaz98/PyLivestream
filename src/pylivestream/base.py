@@ -103,7 +103,12 @@ class Livestream(Stream):
             run(self.cmd)
         elif len(sinks) == 1:
             run(self.cmd)
-        else:  # multi-stream output tee
+        else:
+            """
+            multi-stream output tee
+            https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs#Teepseudo-muxer
+            https://trac.ffmpeg.org/wiki/EncodingForStreamingSites#Outputtingtomultiplestreamingserviceslocalfile
+            """
             cmdstem: list[str] = self.cmd[:-3]
             # +global_header is necessary to tee to multiple services
             cmd: list[str] = cmdstem + ["-flags:v", "+global_header", "-f", "tee"]
@@ -115,7 +120,8 @@ class Livestream(Stream):
                 if self.vidsource == "file":
                     # picks first video and audio stream, often correct
                     cmd += ["-map", "0:v", "-map", "0:a:0"]
-                else:  # device (Camera)
+                else:
+                    # device (Camera)
                     # connect video device to video stream,
                     # audio device to audio stream
                     cmd += ["-map", "0:v", "-map", "1:a"]

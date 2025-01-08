@@ -205,7 +205,9 @@ JSON:
 * `camera_size`: camera resolution -- find from `v4l2-ctl --list-formats-ext` or camera spec sheet.
 * `camera_fps`: camera fps -- found from command above or camera spec sheet
 
-Stream to multiple sites, in this example Facebook Live and YouTube Live simultaneously:
+Stream to multiple sites. This uses FFmpeg
+[-f tee](https://trac.ffmpeg.org/wiki/Creating%20multiple%20outputs#Teepseudo-muxer).
+For example, Facebook Live and YouTube Live simultaneously:
 
 ```sh
 python -m pylivestream.camera youtube facebook ./pylivestream.json
