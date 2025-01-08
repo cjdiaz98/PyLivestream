@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pylivestream"
-description = "Livestream using FFmpeg to YouTube Live, Twitter, Facebook Live, Twitch, and more"
-keywords = ["youtube", "ffmpeg", "twitch", "twitter live", "facebook live", "restream.io"]
+description = "Livestream using FFmpeg to YouTube Live, X, Facebook Live, Twitch, and more"
+keywords = ["youtube", "ffmpeg", "twitch", "X", "facebook live", "restream.io"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",

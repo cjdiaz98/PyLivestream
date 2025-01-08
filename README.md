@@ -13,7 +13,7 @@ FFmpeg is used from Python `subprocess` to stream to sites including:
 * Facebook Live  (requires FFmpeg >= 4.2 due to mandatory RTMPS)
 * YouTube Live
 * Twitch
-* also Ustream, Vimeo, Restream.io and more for streaming broadcasts.
+* also IBM Live Video, Vimeo, Restream.io and more for streaming broadcasts.
 
 ![PyLivestream diagram showing screen capture or camera simultaneously livestreaming to multiple services.](./doc/logo.png)
 
@@ -160,19 +160,15 @@ python -m pylivestream.screen youtube ./pylivestream.json
 
 ### Facebook Live
 
-Facebook Live requires FFmpeg >= 4.2 due to mandatory RTMPS
+Facebook Live requires FFmpeg &ge; 4.2 due to mandatory RTMPS.
 
-1. configure your Facebook Live stream
+1. configure a Facebook Live stream
 2. Put [stream ID](https://www.facebook.com/live/create) into the JSON file
 3. Run Python script for Facebook with chosen input
 
 ```sh
 python -m pylivestream.screen facebook ./pylivestream.json
 ```
-
-### Twitter
-
-TODO
 
 ### Twitch
 
@@ -257,37 +253,34 @@ python -m pylivestream.screen2disk myvid.avi ./pylivestream.json
 
 ## Notes
 
-* Linux requires X11, not Wayland (choose at login)
-* `x11grab` was deprecated in FFmpeg 3.3, was previously replaced by `xcbgrab`
-* Reference [webpage](https://www.scivision.dev/youtube-live-ffmpeg-livestream/)
+Linux requires X11, not Wayland (choose at login).
+If Wayland is required, consider OBS Studio.
+[x11grab](https://ffmpeg.org/ffmpeg-devices.html#x11grab) is used for screen capture on Linux.
 
-### FFmpeg References
-
-* [streaming](https://trac.ffmpeg.org/wiki/EncodingForStreamingSites)
-* [camera](https://trac.ffmpeg.org/wiki/Capture/Webcam)
-* Camera [overlay](https://trac.ffmpeg.org/wiki/EncodingForStreamingSites#Withwebcamoverlay)
+* [FFmpeg streaming](https://trac.ffmpeg.org/wiki/EncodingForStreamingSites)
+* [FFmpeg camera](https://trac.ffmpeg.org/wiki/Capture/Webcam)
+* Camera [FFmpeg overlay](https://trac.ffmpeg.org/wiki/EncodingForStreamingSites#Withwebcamoverlay)
 
 ### Windows
 
 * [gdigrab](https://ffmpeg.org/ffmpeg-devices.html#gdigrab)
 
-DirectShow didn't work for me on Windows 10, so I used gdigrab instead.
+DirectShow didn't seem to work on Windows, so we used gdigrab instead.
 
 * [DirectShow](https://trac.ffmpeg.org/wiki/DirectShow) device selection
 * DirectShow [examples](https://ffmpeg.org/ffmpeg-devices.html#Examples-4)
 
 ### Stream References
 
-* [Twitch parameters](https://help.twitch.tv/customer/portal/articles/1253460-broadcast-requirements)
-* Twitch [ingest servers](https://stream.twitch.tv/ingests/)
-* Twitch [encoding](https://stream.twitch.tv/encoding/)
+* [X Live](https://help.x.com/en/using-x/x-live) doesn't give any specific settings.
 
-* [Twitter Live parameters](https://help.twitter.com/en/using-twitter/twitter-live)
+* Twitch [ingest servers](https://dev.twitch.tv/docs/video-broadcast/)
+* Twitch [encoding](https://help.twitch.tv/s/article/broadcasting-guidelines)
+
 * [YouTube Live parameters](https://support.google.com/youtube/answer/2853702)
 * [Facebook Live parameters](https://www.facebook.com/facebookmedia/get-started/live)
-* [Ustream parameters](https://support.ustream.tv/hc/en-us/articles/207852117-Internet-connection-and-recommended-encoding-settings)
-* Vimeo [config](https://help.vimeo.com/hc/en-us/articles/115012811168)
-* Vimeo [parameters](https://help.vimeo.com/hc/en-us/articles/115012811208-Encoder-guides)
+* [IBM Cloud Video parameters](https://support.video.ibm.com/hc/en-us/articles/207852117-Internet-connection-and-recommended-encoding-settings)
+* [Vimeo](https://help.vimeo.com/hc/en-us/articles/12426924775953-Encoder-guide)
 
 ### Logo Credits
 
