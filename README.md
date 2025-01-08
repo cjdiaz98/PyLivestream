@@ -48,7 +48,7 @@ Other projects using FFmpeg from Python include:
 
 ## Install
 
-Requires FFmpeg &ge; 3.0 (&ge; 4.2 for Facebook Live RTMPS)
+Requires FFmpeg &ge; 4.2 for RTMPS as required or recommended by Facebook Live, YouTube Live, etc.
 
 Latest release:
 
