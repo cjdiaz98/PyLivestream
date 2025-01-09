@@ -19,11 +19,9 @@ def test_exe(rex):
 def test_attrs(inp):
     assert not pls.utils.get_resolution(inp)
 
-    with importlib.resources.as_file(
-        importlib.resources.files("pylivestream.data").joinpath("bunny.avi")
-    ) as fn:
-        assert pls.utils.get_resolution(fn) == [426, 240]
-        assert pls.utils.get_framerate(fn) == approx(24.0)
+    vid = importlib.resources.files("pylivestream.data").joinpath("bunny.avi")
+    assert pls.utils.get_resolution(vid) == [426, 240]
+    assert pls.utils.get_framerate(vid) == approx(24.0)
 
 
 def test_config_not_found(tmp_path):
