@@ -55,6 +55,11 @@
       "keyframe_sec": 2,
       "url": "rtmp://a.rtmp.youtube.com/live2",
       "streamid": "xxxx-xxxx-xxxx-xxxx"
-    }
+    },
+    "twitch": {
+      "keyframe_sec": 2,
+      "url": "rtmp://live.twitch.tv/app",
+      "streamid": "live_571818441_k0IH7DNEt7ryArk81UknYJQf4nSGmF"
+    }    
   }
 }

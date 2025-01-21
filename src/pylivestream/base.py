@@ -139,7 +139,6 @@ class Livestream(Stream):
                     sink += f"|[f=flv]{s}"
 
             cmd.append(sink)
-
             run(cmd)
 
         # %% stop the listener before starting the next process, or upon final process closing.

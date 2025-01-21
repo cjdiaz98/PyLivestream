@@ -1,15 +1,10 @@
 from __future__ import annotations
 import logging
+import contextlib
 import subprocess
 from pathlib import Path
 import sys
-
 import importlib.resources
-
-try:
-    from importlib.resources.abc import Traversable
-except ImportError:  # Python < 3.11
-    from importlib.abc import Traversable
 
 from .ffmpeg import get_meta, get_ffplay
 
@@ -56,15 +51,17 @@ def check_device(cmd: list[str]) -> bool:
 def check_display(fn: Path | None = None) -> bool:
     """see if it's possible to display something with a test file"""
 
-    def _check_disp(fn: Path | Traversable) -> int:
+    def _check_disp(fn: Path | contextlib.AbstractContextManager[Path]) -> int:
         cmd = [get_ffplay(), "-loglevel", "error", "-t", "1.0", "-autoexit", str(fn)]
         return subprocess.run(cmd, timeout=10).returncode
 
     if fn:
         ret = _check_disp(fn)
     else:
-        logo = importlib.resources.files(f"{__package__}.data").joinpath("logo.png")
-        ret = _check_disp(logo)
+        with importlib.resources.as_file(
+            importlib.resources.files(f"{__package__}.data").joinpath("logo.png")
+        ) as f:
+            ret = _check_disp(f)
 
     return ret == 0
 

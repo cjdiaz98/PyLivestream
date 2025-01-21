@@ -25,7 +25,6 @@ __all__ = [
     "capture_screen",
 ]
 
-
 def stream_file(
     ini_file: Path,
     websites: str | list[str],

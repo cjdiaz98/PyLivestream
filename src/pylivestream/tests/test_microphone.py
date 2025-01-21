@@ -21,28 +21,32 @@ ini = Path(__file__).parents[1] / "data/pylivestream.json"
 
 def test_microphone_props():
 
-    logo = importlib.resources.files("pylivestream.data").joinpath("logo.png")
-    S = pls.Microphone(ini, websites=sites, image=logo)
+    with importlib.resources.as_file(
+        importlib.resources.files("pylivestream.data").joinpath("logo.png")
+    ) as logo:
+        S = pls.Microphone(ini, websites=sites, image=logo)
 
-    for s in S.streams:
-        assert "-re" not in S.streams[s].cmd
-        assert S.streams[s].fps is None
-        assert S.streams[s].res == [720, 540]
+        for s in S.streams:
+            assert "-re" not in S.streams[s].cmd
+            assert S.streams[s].fps is None
+            assert S.streams[s].res == [720, 540]
 
-        assert S.streams[s].video_kbps == 800
+            assert S.streams[s].video_kbps == 800
 
 
 def test_microphone_image():
 
-    img = importlib.resources.files("pylivestream.data").joinpath("check4k.png")
-    S = pls.Microphone(ini, websites=sites, image=img)
+    with importlib.resources.as_file(
+        importlib.resources.files("pylivestream.data").joinpath("check4k.png")
+    ) as img:
+        S = pls.Microphone(ini, websites=sites, image=img)
 
-    for s in S.streams:
-        assert "-re" not in S.streams[s].cmd
-        assert S.streams[s].fps is None
-        assert S.streams[s].res == [3840, 2160]
+        for s in S.streams:
+            assert "-re" not in S.streams[s].cmd
+            assert S.streams[s].fps is None
+            assert S.streams[s].res == [3840, 2160]
 
-        assert S.streams[s].video_kbps == 4000
+            assert S.streams[s].video_kbps == 4000
 
 
 @pytest.mark.timeout(TIMEOUT)

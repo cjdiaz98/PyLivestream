@@ -1,0 +1,9 @@
+requests
+ffmpeg-python
+twitchAPI
+asyncio
+flask
+waitress
+python-dotenv
+PyLivestream
+pyjwt

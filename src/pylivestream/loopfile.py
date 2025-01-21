@@ -3,7 +3,6 @@ import argparse
 
 from .api import stream_file
 
-
 if __name__ == "__main__":
     """
     LIVE STREAM using FFMPEG -- Looping input file endlessly
