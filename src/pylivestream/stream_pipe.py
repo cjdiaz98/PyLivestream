@@ -21,29 +21,8 @@ if not twitch_key:
 # Construct the Twitch RTMP URL
 twitch_url = f"rtmp://live.twitch.tv/app/{twitch_key}"
 
-app = Flask(__name__)
-
 # Shared variable between the endpoint and main loop
 idea_queue: List[VideoGeneration] = []
-
-def run_flask_app():
-    """Run Flask app in a separate thread."""
-    app.run(host="0.0.0.0", port=5000, debug=False)
-
-@app.route('/submit-idea', methods=['POST'])
-def submit_idea():
-    global shared_variable
-    data = request.json
-    if not data or 'description' not in data:
-        return jsonify({"error": "Invalid input, 'description' is required"}), 400
-
-    description = data['description']
-    vidgen = submit_video_idea(description)
-    idea_queue.append(vidgen)
-    # Update the shared variable
-    shared_variable["task_id"] = task_id
-
-    return jsonify({"message": "Idea submitted successfully", "task_id": task_id}), 200
 
 def get_next_generated_file() -> str | None:
     if not idea_queue:
@@ -51,7 +30,6 @@ def get_next_generated_file() -> str | None:
     else:
         top_vid = idea_queue.pop()
         return top_vid.url
-
 
 def stream_from_url(url, ffmpeg_process):
     """
@@ -68,7 +46,7 @@ def stream_from_url(url, ffmpeg_process):
     except Exception as e:
         print(f"Error streaming from URL: {e}")
 
-def stream_placeholder(placeholder_bytes, ffmpeg_process):
+def stream_placeholder2(placeholder_bytes, ffmpeg_process):
     """
     Stream placeholder bytes to the ffmpeg process in a loop.
     :param placeholder_bytes: Bytes-like object of the placeholder video.
@@ -81,6 +59,53 @@ def stream_placeholder(placeholder_bytes, ffmpeg_process):
         placeholder_bytes.seek(0)
     ffmpeg_process.stdin.write(data)
 
+def stream_placeholder(placeholder_bytes, ffmpeg_process):
+    placeholder_bytes.seek(0)  # Start at the beginning
+    while True:
+        data = placeholder_bytes.read(4096)
+        if not data:  # If EOF, loop back
+            placeholder_bytes.seek(0)
+            break
+        try:
+            ffmpeg_process.stdin.write(data)
+        except BrokenPipeError:
+            print("FFmpeg process terminated.")
+            break
+
+import json
+def check_video_format(file_path):
+    try:
+        result = subprocess.run(
+            [
+                "ffprobe",
+                "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "stream=codec_name,pix_fmt,width,height,avg_frame_rate",
+                "-of", "json",
+                file_path
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        video_info = json.loads(result.stdout)
+        return video_info.get("streams", [{}])[0]
+    except Exception as e:
+        print(f"Error checking video format: {e}")
+        return {}
+
+def verify_placeholder_bytes(placeholder_path):
+    # Check placeholder video format
+    info = check_video_format(placeholder_path)
+    if info.get("codec_name") != "h264":
+        print("Error: Placeholder video codec must be H.264.")
+    if info.get("pix_fmt") != "yuv420p":
+        print("Error: Placeholder pixel format must be yuv420p.")
+    if info.get("width") != 1920 or info.get("height") != 1080:
+        print("Error: Placeholder resolution must be 1920x1080.")
+    if "30/1" not in info.get("avg_frame_rate", ""):
+        print("Error: Placeholder frame rate must be 30 fps.")
+
 def start_ffmpeg_process(twitch_url: str):
     """
     Start the ffmpeg process for streaming to Twitch.
@@ -88,26 +113,28 @@ def start_ffmpeg_process(twitch_url: str):
     return subprocess.Popen(
         [
             "ffmpeg",
-            "-re",
-            "-f", "rawvideo",  # Raw video input
-            "-pixel_format", "yuv420p",  # Input pixel format
-            "-video_size", "1920x1080",  # Resolution
+            "-loglevel", "error",  # Reduce logging output
+            "-re",  # Real-time input
+            "-f", "rawvideo",  # Input is raw video
+            "-pix_fmt", "yuv420p",  # Pixel format
+            "-s", "1920x1080",  # Resolution (adjust as needed)
             "-framerate", "30",  # Frame rate
-            "-i", "pipe:",  # Read input from stdin (video)
-            "-f", "lavfi",  # Use lavfi for audio filter
-            "-i", "anullsrc=r=44100:cl=stereo",  # Generate silent audio
-            "-vf", "format=yuv420p",  # Output pixel format
-            "-c:v", "libx264",  # Encode to H.264
-            "-preset", "veryfast",
-            "-b:v", "500k",
-            "-g", "60",
-            "-c:a", "aac",  # Audio codec
+            "-i", "pipe:",  # Input from stdin
+            "-codec:v", "libx264",  # Encode to H.264
+            "-preset", "veryfast",  # Encoding speed preset
+            "-b:v", "3000k",  # Video bitrate
+            "-g", "60",  # Keyframe interval
+            "-maxrate", "3000k",  # Max video bitrate
+            "-bufsize", "1500k",  # Buffer size
+            "-codec:a", "aac",  # Audio codec
             "-ar", "44100",  # Audio sample rate
             "-b:a", "128k",  # Audio bitrate
-            "-f", "flv",
-            twitch_url,
+            "-strict", "experimental",  # Use experimental features
+            "-f", "flv",  # Output format
+            twitch_url,  # Twitch RTMP URL
         ],
-        stdin=subprocess.PIPE
+        stdin=subprocess.PIPE,
+        stderr=subprocess.PIPE,  # Capture stderr for debugging
     )
 
 # idea_queue.append(VideoGeneration("", task_id="CmJxEWeIgnwAAAAAAEuqyA"))
@@ -131,26 +158,47 @@ def start_ffmpeg_process(twitch_url: str):
 #         ffmpeg_process.stdin.close()
 #         ffmpeg_process.wait()
 
+app = Flask(__name__)
+
+def run_flask_app():
+    """Run Flask app in a separate thread."""
+    app.run(host="0.0.0.0", port=5000, debug=False)
+
+@app.route('/submit-idea', methods=['POST'])
+def submit_idea():
+    global shared_variable
+    data = request.json
+    if not data or 'description' not in data:
+        return jsonify({"error": "Invalid input, 'description' is required"}), 400
+
+    description = data['description']
+    vidgen = submit_video_idea(description)
+    idea_queue.append(vidgen)
+    # Update the shared variable
+
+    return jsonify({"message": "Idea submitted successfully", "task_id": vidgen.task_id}), 200
+
 if __name__ == "__main__":
     # task_id = invoke_video_generation()
     placeholder_bytes = get_placeholder_bytes(placeholder_path3)
+    verify_placeholder_bytes(placeholder_path3)
 
     # Start ffmpeg process
     ffmpeg_process = start_ffmpeg_process(twitch_url)
 
-    # Start Flask server in a separate thread
-    flask_thread = threading.Thread(target=run_flask_app, daemon=True)
-    flask_thread.start()
-
-    current_url = None
+    # # Start Flask server in a separate thread
+    # flask_thread = threading.Thread(target=run_flask_app, daemon=True)
+    # flask_thread.start()
+    
     while True:
-        vid_url = get_next_generated_file(task_id)
+        vid_url = None
+        # vid_url = get_next_generated_file(task_id)
+        
         if vid_url:
             stream_from_url(vid_url, ffmpeg_process)
         else:
             stream_placeholder(placeholder_bytes, ffmpeg_process)
-        time.sleep(5)
 
-    # Cleanup
-    ffmpeg_process.stdin.close()
-    ffmpeg_process.wait()
+    # # Cleanup
+    # ffmpeg_process.stdin.close()
+    # ffmpeg_process.wait()
