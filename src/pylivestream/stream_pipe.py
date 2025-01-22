@@ -7,11 +7,12 @@ from flask import Flask, request, jsonify
 import threading
 import time
 import requests
-from vidgen.VidgenUtils import VideoGeneration, submit_video_idea, get_placeholder_bytes
+from vidgen.VidgenUtils import VideoGeneration, submit_video_idea, get_placeholder_bytes, get_ready_videos
 from typing import List, Optional
 
 load_dotenv('../../.env')
 placeholder_path3 = "C:/git/PyLivestream/videos/whitenoise3.mp4"
+# placeholder_path3="C:/git/PyLivestream/videos/cat_yarn.mp4"
 # Get Twitch key from environment variable
 # twitch_key = os.getenv("TWITCH_STREAM_KEY")
 twitch_key = "live_571818441_k0IH7DNEt7ryArk81UknYJQf4nSGmF"
@@ -23,8 +24,9 @@ twitch_url = f"rtmp://live.twitch.tv/app/{twitch_key}"
 
 # Shared variable between the endpoint and main loop
 idea_queue: List[VideoGeneration] = []
+ready_queue: List[VideoGeneration] = []
 
-def get_next_generated_file() -> str | None:
+def get_next_generated_file(ready_queue: List[VideoGeneration]) -> str | None:
     if not idea_queue:
         return None
     else:
@@ -37,6 +39,7 @@ def stream_from_url(url, ffmpeg_process):
     :param url: The URL of the video to stream.
     :param ffmpeg_process: The ffmpeg process to write bytes to.
     """
+    print("stream from url")
     try:
         with requests.get(url, stream=True) as response:
             response.raise_for_status()
@@ -97,6 +100,7 @@ def check_video_format(file_path):
 def verify_placeholder_bytes(placeholder_path):
     # Check placeholder video format
     info = check_video_format(placeholder_path)
+    print(info)
     if info.get("codec_name") != "h264":
         print("Error: Placeholder video codec must be H.264.")
     if info.get("pix_fmt") != "yuv420p":
@@ -118,6 +122,7 @@ def start_ffmpeg_process(twitch_url: str):
             "-f", "rawvideo",  # Input is raw video
             "-pix_fmt", "yuv420p",  # Pixel format
             "-s", "1920x1080",  # Resolution (adjust as needed)
+            # "-s", "1280x720",  # Resolution (adjust as needed)
             "-framerate", "30",  # Frame rate
             "-i", "pipe:",  # Input from stdin
             "-codec:v", "libx264",  # Encode to H.264
@@ -137,7 +142,6 @@ def start_ffmpeg_process(twitch_url: str):
         stderr=subprocess.PIPE,  # Capture stderr for debugging
     )
 
-# idea_queue.append(VideoGeneration("", task_id="CmJxEWeIgnwAAAAAAEuqyA"))
 
 # if __name__ == "__main__":
 #     placeholder_path = "placeholder.mp4"  # Replace with your placeholder video path
@@ -179,22 +183,24 @@ def submit_idea():
     return jsonify({"message": "Idea submitted successfully", "task_id": vidgen.task_id}), 200
 
 if __name__ == "__main__":
+    # idea_queue.append(VideoGeneration("", task_id="CmJxEWeIgnwAAAAAAEuqyA"))
     # task_id = invoke_video_generation()
-    placeholder_bytes = get_placeholder_bytes(placeholder_path3)
     verify_placeholder_bytes(placeholder_path3)
+    placeholder_bytes = get_placeholder_bytes(placeholder_path3)
 
     # Start ffmpeg process
     ffmpeg_process = start_ffmpeg_process(twitch_url)
 
     # # Start Flask server in a separate thread
-    # flask_thread = threading.Thread(target=run_flask_app, daemon=True)
-    # flask_thread.start()
+    flask_thread = threading.Thread(target=run_flask_app, daemon=True)
+    flask_thread.start()
     
     while True:
-        vid_url = None
-        # vid_url = get_next_generated_file(task_id)
+        get_ready_videos(idea_queue, ready_queue)
+        vid_url = get_next_generated_file(ready_queue)
         
         if vid_url:
+            print(vid_url)
             stream_from_url(vid_url, ffmpeg_process)
         else:
             stream_placeholder(placeholder_bytes, ffmpeg_process)

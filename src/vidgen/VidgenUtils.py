@@ -1,6 +1,7 @@
 from typing import List, Optional
 from io import BytesIO
 import subprocess
+from vidgen.Kling.KlingGetTaskAPI import TaskStatusResult
 
 class VideoGeneration:
     def __init__(self, video_description: str,
@@ -79,19 +80,17 @@ def get_next_generated_file(task_id: str) -> BytesIO:
 from vidgen.Kling.KlingTextToVideo import submit_video_idea
 from vidgen.Kling.KlingGetTaskAPI import send_get_text2vid_task_request
 
-def get_ready_videos(queue: List[VideoGeneration]) -> List[VideoGeneration]:
+def get_ready_videos(pending_queue: List[VideoGeneration], ready_queue: List[VideoGeneration]):
     """
     Get a list of video ideas that are ready for viewing.
     """
-    vid_gens = []
 
-    for idea in idea_queue:
+    for idea in pending_queue:
         url = check_video_generation_status(idea.task_id)
         if url:
-            idea_queue.remove(idea)
-            vid_gens.append(idea)
+            # pending_queue.remove(idea)
+            ready_queue.append(idea)
             idea.url = url
-    return vid_gens
 
 def submit_video_idea(description: str) -> VideoGeneration:
     """
@@ -111,7 +110,7 @@ def check_video_generation_status(task_id: str) -> str | None:
     :return: URL of video or None.
     """
     status = send_get_text2vid_task_request(task_id)
-    if status.lower() == "succeed":
+    if status and status.url != "":
         return status.url
     else: 
         return None

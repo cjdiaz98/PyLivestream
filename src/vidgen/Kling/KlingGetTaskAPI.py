@@ -72,15 +72,15 @@ class GetTaskModel:
         self.data = data
         self.message = message
 
-def send_get_image2vid_task_request(task_id: str) -> TaskStatusResult:
+def send_get_image2vid_task_request(task_id: str) -> Optional[TaskStatusResult]:
     image2vid_task_retrieve = f"https://api.klingai.com/v1/videos/image2video/{task_id}"
-    return send_get_task_request(task_id, image2vid_task_retrieve)
+    return send_get_task_request(image2vid_task_retrieve)
 
-def send_get_text2vid_task_request(task_id: str) -> TaskStatusResult:
+def send_get_text2vid_task_request(task_id: str) -> Optional[TaskStatusResult]:
     text2vid_task_retrieve = f"https://api.klingai.com/v1/videos/text2video/{task_id}"
-    return send_get_task_request(task_id, text2vid_task_retrieve)
+    return send_get_task_request(text2vid_task_retrieve)
 
-def send_get_task_request(task_id: str, url):
+def send_get_task_request(url) -> Optional[TaskStatusResult]:
     # Create the payload
     api_key = get_api_token()
     # Set headers
@@ -193,5 +193,5 @@ if __name__ == "__main__":
     # print(f"Task Status: {api_model.data.status}")
     # print(f"Video URL: {api_model.data.output['works'][0]['video']['resource']}")
 
-    # send_get_image2vid_task_request("CjilnGeIgjUAAAAAAErEWA")
-    send_get_text2vid_task_request("CmJxEWeIgnwAAAAAAEuqyA")
+    print(send_get_image2vid_task_request("CjilnGeIgjUAAAAAAErEWA"))
+    # send_get_text2vid_task_request("CmJxEWeIgnwAAAAAAEuqyA")
