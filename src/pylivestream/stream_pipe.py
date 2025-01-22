@@ -11,8 +11,10 @@ from vidgen.VidgenUtils import VideoGeneration, submit_video_idea, get_placehold
 from typing import List, Optional
 
 load_dotenv('../../.env')
-placeholder_path3 = "C:/git/PyLivestream/videos/whitenoise3.mp4"
-# placeholder_path3="C:/git/PyLivestream/videos/cat_yarn.mp4"
+# placeholder_path3 = "C:/git/PyLivestream/videos/whitenoise3.mp4"
+placeholder_path3="C:/git/PyLivestream/videos/cat_yarn.mp4"
+# placeholder_path3="C:/git/PyLivestream/videos/spongebob-clip.mp4"
+
 # Get Twitch key from environment variable
 # twitch_key = os.getenv("TWITCH_STREAM_KEY")
 twitch_key = "live_571818441_k0IH7DNEt7ryArk81UknYJQf4nSGmF"
@@ -117,12 +119,12 @@ def start_ffmpeg_process(twitch_url: str):
     return subprocess.Popen(
         [
             "ffmpeg",
-            "-loglevel", "error",  # Reduce logging output
+            "-loglevel", "info",  # Reduce logging output
             "-re",  # Real-time input
             "-f", "rawvideo",  # Input is raw video
             "-pix_fmt", "yuv420p",  # Pixel format
-            "-s", "1920x1080",  # Resolution (adjust as needed)
-            # "-s", "1280x720",  # Resolution (adjust as needed)
+            # "-s", "1920x1080",  # Resolution (adjust as needed)
+            "-s", "1280x720",  # Resolution (adjust as needed)
             "-framerate", "30",  # Frame rate
             "-i", "pipe:",  # Input from stdin
             "-codec:v", "libx264",  # Encode to H.264
@@ -182,19 +184,32 @@ def submit_idea():
 
     return jsonify({"message": "Idea submitted successfully", "task_id": vidgen.task_id}), 200
 
+def read_ffmpeg_stderr(ffmpeg_process):
+    for line in iter(ffmpeg_process.stderr.readline, b""):
+        print(line.decode("utf-8"), end="")
+
 if __name__ == "__main__":
     # idea_queue.append(VideoGeneration("", task_id="CmJxEWeIgnwAAAAAAEuqyA"))
     # task_id = invoke_video_generation()
     verify_placeholder_bytes(placeholder_path3)
     placeholder_bytes = get_placeholder_bytes(placeholder_path3)
+    data = placeholder_bytes.read(4096)
+    
+    print("Placeholder bytes:")
+    # print(data[:20])  # Inspect the beginning of the raw video data
+    length = len(placeholder_bytes.getbuffer())
+    print(length)  # Inspect the beginning of the raw video data
 
     # Start ffmpeg process
     ffmpeg_process = start_ffmpeg_process(twitch_url)
 
-    # # Start Flask server in a separate thread
+    # Start Flask server in a separate thread
     flask_thread = threading.Thread(target=run_flask_app, daemon=True)
     flask_thread.start()
     
+    stderr_thread = threading.Thread(target=read_ffmpeg_stderr, args=(ffmpeg_process,), daemon=True)
+    stderr_thread.start()
+
     while True:
         get_ready_videos(idea_queue, ready_queue)
         vid_url = get_next_generated_file(ready_queue)
@@ -204,7 +219,7 @@ if __name__ == "__main__":
             stream_from_url(vid_url, ffmpeg_process)
         else:
             stream_placeholder(placeholder_bytes, ffmpeg_process)
-
-    # # Cleanup
-    # ffmpeg_process.stdin.close()
-    # ffmpeg_process.wait()
+        
+    # Cleanup
+    ffmpeg_process.stdin.close()
+    ffmpeg_process.wait()

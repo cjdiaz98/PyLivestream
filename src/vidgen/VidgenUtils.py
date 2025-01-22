@@ -2,6 +2,7 @@ from typing import List, Optional
 from io import BytesIO
 import subprocess
 from vidgen.Kling.KlingGetTaskAPI import TaskStatusResult
+import os
 
 class VideoGeneration:
     def __init__(self, video_description: str,
@@ -42,11 +43,15 @@ def get_placeholder_bytes(path: str) -> BytesIO:
     """
     Read placeholder video into BytesIO.
     """
+    if not os.path.exists(path):
+        print(f"File does not exist: {path}")
+
     placeholder_bytes = BytesIO()
     decode_process = subprocess.Popen(
         [
             "ffmpeg",
             "-i", path,  # Input placeholder video
+            "-loglevel", "info",
             "-f", "rawvideo",  # Decode to raw video
             "-pix_fmt", "yuv420p",  # Pixel format
             "-",
@@ -55,10 +60,18 @@ def get_placeholder_bytes(path: str) -> BytesIO:
         stderr=subprocess.PIPE,
     )
     
+    # Read stdout
     for chunk in iter(lambda: decode_process.stdout.read(4096), b""):
         placeholder_bytes.write(chunk)
+    
     decode_process.stdout.close()
     decode_process.wait()
+    
+    # Print stderr for debugging
+    if decode_process.returncode != 0:
+        print("FFmpeg stderr:")
+        print(decode_process.stderr.read())
+    
     return placeholder_bytes
 
 def get_next_generated_file(task_id: str) -> BytesIO:
