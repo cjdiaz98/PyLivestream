@@ -12,8 +12,8 @@ from typing import List, Optional
 
 load_dotenv('../../.env')
 # placeholder_path3 = "C:/git/PyLivestream/videos/whitenoise3.mp4"
-placeholder_path3="C:/git/PyLivestream/videos/cat_yarn.mp4"
-# placeholder_path3="C:/git/PyLivestream/videos/spongebob-clip.mp4"
+# placeholder_path3="C:/git/PyLivestream/videos/cat_yarn.mp4"
+placeholder_path3="C:/git/PyLivestream/videos/spongebob-clip.mp4"
 
 # Get Twitch key from environment variable
 # twitch_key = os.getenv("TWITCH_STREAM_KEY")
@@ -123,10 +123,11 @@ def start_ffmpeg_process(twitch_url: str):
             "-re",  # Real-time input
             "-f", "rawvideo",  # Input is raw video
             "-pix_fmt", "yuv420p",  # Pixel format
-            # "-s", "1920x1080",  # Resolution (adjust as needed)
-            "-s", "1280x720",  # Resolution (adjust as needed)
+            "-s", "1920x1080",  # Resolution (adjust as needed)
             "-framerate", "30",  # Frame rate
             "-i", "pipe:",  # Input from stdin
+            # "-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2",  # Scaling and padding - NOTE: this probably won't look good for all videos
+            # "-vf", "pad=1920:1080:(ow-iw)/2:(oh-ih)/2",  # Pad to 1920x1080
             "-codec:v", "libx264",  # Encode to H.264
             "-preset", "veryfast",  # Encoding speed preset
             "-b:v", "3000k",  # Video bitrate
@@ -143,7 +144,6 @@ def start_ffmpeg_process(twitch_url: str):
         stdin=subprocess.PIPE,
         stderr=subprocess.PIPE,  # Capture stderr for debugging
     )
-
 
 # if __name__ == "__main__":
 #     placeholder_path = "placeholder.mp4"  # Replace with your placeholder video path
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     verify_placeholder_bytes(placeholder_path3)
     placeholder_bytes = get_placeholder_bytes(placeholder_path3)
     data = placeholder_bytes.read(4096)
-    
+
     print("Placeholder bytes:")
     # print(data[:20])  # Inspect the beginning of the raw video data
     length = len(placeholder_bytes.getbuffer())

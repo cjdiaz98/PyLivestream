@@ -7,3 +7,4 @@ waitress
 python-dotenv
 PyLivestream
 pyjwt
+pyngrok
