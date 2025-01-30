@@ -28,6 +28,8 @@ import time
 from typing import List
 from dotenv import load_dotenv
 import os
+from Kling.KlingImageToVideo import generate_video_from_image, get_task_id
+from Kling.KlingGetTaskAPI import send_get_image2vid_task_request, process_kling_tasks
 
 # Load environment variables from .env file
 load_dotenv()
@@ -62,8 +64,9 @@ def process_tasks(api_key, task_ids, success_callback, timeout=300):
 				results[task_id] = success_callback(task)
 			elif extract_status(task) != "failed":
 				# Keep pending tasks for further polling
-				print("Failed Task:", task)
 				new_task_ids.append(task_id)
+			else:
+				print("Failed Task:", task)
 
 		# Update the list of pending tasks
 		task_ids = new_task_ids
@@ -143,12 +146,20 @@ VIDEO_INSTRUCTIONS = (
 	"The generated video will be relatively short (5 seconds) and should be cool, interesting, weird and/or funny--just overall entertaining."
 )
 
-from VidGen.Kling.KlingImageToVideo import generate_video_from_image
-
-for describe_task in description_mapping:
-	description = description_mapping[describe_task]
-	photo_path = task_ids_to_paths[describe_task]
+import itertools
+video_gen_task_ids = []
+for describe_task_id in list(itertools.islice(description_mapping.keys(), 1)): # just look at first one for now
+	description = description_mapping[describe_task_id]
+	photo_path = task_ids_to_paths[describe_task_id]
 	public_photo_url = public_url + "/" + photo_path
 
 	video_prompt = prompt_generator(VIDEO_INSTRUCTIONS.format(image_description=description))
-	video_task = generate_video_from_image(public_photo_url, video_prompt, prompt=video_prompt)
+	print("Video prompt:", video_prompt)
+	video_task_response = generate_video_from_image(public_photo_url, prompt=video_prompt)
+	task_id = get_task_id(video_task_response)
+	if task_id and task_id != "":
+		video_gen_task_ids.append(task_id)
+
+# Wait for video generation
+vidgen_results = process_kling_tasks(send_get_image2vid_task_request, video_gen_task_ids, 600)
+print(vidgen_results)

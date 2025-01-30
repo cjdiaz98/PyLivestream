@@ -145,25 +145,6 @@ def start_ffmpeg_process(twitch_url: str):
         stderr=subprocess.PIPE,  # Capture stderr for debugging
     )
 
-# if __name__ == "__main__":
-#     placeholder_path = "placeholder.mp4"  # Replace with your placeholder video path
-#     twitch_url = "rtmp://your-twitch-url-here"  # Replace with your Twitch stream URL
-
-#     # Prepare placeholder bytes
-#     placeholder_bytes = get_placeholder_bytes(placeholder_path)
-
-#     # Start the ffmpeg process
-#     ffmpeg_process = start_ffmpeg_process(twitch_url)
-
-#     # Stream placeholder bytes in a loop
-#     try:
-#         stream_placeholder(placeholder_bytes, ffmpeg_process)
-#     except BrokenPipeError:
-#         print("FFmpeg process ended. Exiting...")
-#     finally:
-#         ffmpeg_process.stdin.close()
-#         ffmpeg_process.wait()
-
 app = Flask(__name__)
 
 def run_flask_app():

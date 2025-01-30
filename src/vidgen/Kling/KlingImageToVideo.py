@@ -1,5 +1,5 @@
 import requests
-from KlingAuth import get_api_token
+from Kling.KlingAuth import get_api_token
 
 def generate_video_from_image(image_url, prompt= "", duration=5, mode="std", model_name="kling-v1"):
     """
@@ -47,8 +47,20 @@ def generate_video_from_image(image_url, prompt= "", duration=5, mode="std", mod
         print(f"An error occurred: {str(e)}")
         return {"error": str(e)}
 
+def get_task_id(response: dict) -> str:
+    """
+    Extracts the task ID from the response data.
+
+    Args:
+        response (dict): The response data from the API.
+
+    Returns:
+        str: The task ID extracted from the response.
+    """
+    return response.get("data", {}).get("task_id", "")
+
 # Example usage
 if __name__ == "__main__":
     image_url = "https://cdn.britannica.com/20/194520-050-DCAE62F1/New-World-Sylvilagus-cottontail-rabbits.jpg"
-    result = generate_video_from_image(image_url, duration=5, mode="std", model_name="kling-v1")
+    result = generate_video_from_image(image_url, prompt="rabbit running through hoops in front of it", duration=5, mode="std", model_name="kling-v1")
     print(result)

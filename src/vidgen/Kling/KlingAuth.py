@@ -24,5 +24,5 @@ def encode_jwt_token(ak, sk):
 
 def get_api_token() -> str:
     authorization = encode_jwt_token(ak, sk)
-    print(authorization) # Printing the generated API_TOKEN
+    # print(authorization) # Printing the generated API_TOKEN
     return authorization
