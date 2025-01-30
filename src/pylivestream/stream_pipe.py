@@ -114,35 +114,32 @@ def verify_placeholder_bytes(placeholder_path):
 
 def start_ffmpeg_process(twitch_url: str):
     """
-    Start the ffmpeg process for streaming to Twitch.
+    Start the ffmpeg process for streaming to Twitch,
+    taking MP4 data from stdin (pipe:0).
     """
     return subprocess.Popen(
         [
             "ffmpeg",
-            "-loglevel", "info",  # Reduce logging output
-            "-re",  # Real-time input
-            "-f", "rawvideo",  # Input is raw video
-            "-pix_fmt", "yuv420p",  # Pixel format
-            "-s", "1920x1080",  # Resolution (adjust as needed)
-            "-framerate", "30",  # Frame rate
-            "-i", "pipe:",  # Input from stdin
-            # "-vf", "scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2",  # Scaling and padding - NOTE: this probably won't look good for all videos
-            # "-vf", "pad=1920:1080:(ow-iw)/2:(oh-ih)/2",  # Pad to 1920x1080
-            "-codec:v", "libx264",  # Encode to H.264
-            "-preset", "veryfast",  # Encoding speed preset
-            "-b:v", "3000k",  # Video bitrate
+            "-loglevel", "info",
+            # -re (read input in real-time) if you want to simulate live playback speed
+            "-re",
+            # Read from stdin (pipe)
+            "-i", "pipe:0",  # The input is MP4 data coming from stdin
+            # Output settings
+            "-c:v", "libx264", 
+            "-preset", "veryfast",
+            "-b:v", "3000k",
+            "-maxrate", "3000k",
+            "-bufsize", "1500k",
             "-g", "60",  # Keyframe interval
-            "-maxrate", "3000k",  # Max video bitrate
-            "-bufsize", "1500k",  # Buffer size
-            "-codec:a", "aac",  # Audio codec
-            "-ar", "44100",  # Audio sample rate
-            "-b:a", "128k",  # Audio bitrate
-            "-strict", "experimental",  # Use experimental features
-            "-f", "flv",  # Output format
-            twitch_url,  # Twitch RTMP URL
+            "-c:a", "aac",
+            "-ar", "44100",
+            "-b:a", "128k",
+            "-f", "flv",  # Output format for Twitch
+            twitch_url,   # e.g. 'rtmp://live.twitch.tv/app/xxxxxx'
         ],
         stdin=subprocess.PIPE,
-        stderr=subprocess.PIPE,  # Capture stderr for debugging
+        stderr=subprocess.PIPE,
     )
 
 app = Flask(__name__)
@@ -169,6 +166,26 @@ def read_ffmpeg_stderr(ffmpeg_process):
     for line in iter(ffmpeg_process.stderr.readline, b""):
         print(line.decode("utf-8"), end="")
 
+def stream_local_mp4_files(directory: str, ffmpeg_process: subprocess.Popen):
+    """
+    Reads each .mp4 file in the directory (in alphabetical order)
+    and writes its bytes into ffmpeg_process.stdin.
+    """
+    mp4_files = sorted(
+        f for f in os.listdir(directory) if f.lower().endswith('.mp4')
+    )
+    for mp4_file in mp4_files:
+        file_path = os.path.join(directory, mp4_file)
+        print(f"Streaming file: {file_path}")
+        with open(file_path, 'rb') as f:
+            while True:
+                chunk = f.read(4096)
+                if not chunk:
+                    break
+                ffmpeg_process.stdin.write(chunk)
+                # Optionally flush to avoid buffering
+                # ffmpeg_process.stdin.flush()
+
 if __name__ == "__main__":
     # idea_queue.append(VideoGeneration("", task_id="CmJxEWeIgnwAAAAAAEuqyA"))
     # task_id = invoke_video_generation()
@@ -189,17 +206,24 @@ if __name__ == "__main__":
     flask_thread.start()
     
     stderr_thread = threading.Thread(target=read_ffmpeg_stderr, args=(ffmpeg_process,), daemon=True)
-    stderr_thread.start()
+    # stderr_thread.start()
 
-    while True:
-        get_ready_videos(idea_queue, ready_queue)
-        vid_url = get_next_generated_file(ready_queue)
+    local_directory = "C:/git/PyLivestream/videos"
+    local_directory = "C:/Users/cjdia/Downloads/kling"
+    try:
+        stream_local_mp4_files(local_directory, ffmpeg_process)
+    except Exception as e:
+        print(f"Error streaming local MP4 files: {e}")
+
+    # while True:
+    #     get_ready_videos(idea_queue, ready_queue)
+    #     vid_url = get_next_generated_file(ready_queue)
         
-        if vid_url:
-            print(vid_url)
-            stream_from_url(vid_url, ffmpeg_process)
-        else:
-            stream_placeholder(placeholder_bytes, ffmpeg_process)
+    #     if vid_url:
+    #         print(vid_url)
+    #         stream_from_url(vid_url, ffmpeg_process)
+    #     else:
+    #         stream_placeholder(placeholder_bytes, ffmpeg_process)
         
     # Cleanup
     ffmpeg_process.stdin.close()
